@@ -10,10 +10,11 @@ RUN pip install --upgrade pip && pip install pipenv && pipenv install --system -
 COPY src/ ./src
 COPY .env.example ./
 
-RUN useradd -m botuser && \
-    mkdir -p logs && \
-    chown -R botuser:botuser /app
+RUN useradd -u 1001 -r -g 0 -m -d /app botuser && \
+    mkdir -p /app/logs && \
+    chown -R 1001:0 /app && \
+    chmod -R g=u /app
 
-USER botuser
+USER 1001
 
 CMD ["python", "-m", "src.main"]
