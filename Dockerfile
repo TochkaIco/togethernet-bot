@@ -5,14 +5,15 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends gcc && rm -rf /var/lib/apt/lists/*
 
 COPY Pipfile Pipfile.lock* ./
-RUN pip install --upgrade pip && pip install pipenv && pipenv install --deploy --ignore-pipfile
+RUN pip install --upgrade pip && pip install pipenv && pipenv install --system --deploy --ignore-pipfile
 
 COPY src/ ./src
 COPY .env.example ./
 
-RUN mkdir -p logs
+RUN useradd -m botuser && \
+    mkdir -p logs && \
+    chown -R botuser:botuser /app
 
-RUN useradd -m botuser
 USER botuser
 
 CMD ["python", "-m", "src.main"]

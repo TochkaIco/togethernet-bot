@@ -1,7 +1,7 @@
 import os
 import discord
 from dotenv import load_dotenv
-from logger import setup_logging
+from src.logger import setup_logging
 
 load_dotenv()
 
