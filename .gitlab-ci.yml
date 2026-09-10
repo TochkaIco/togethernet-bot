@@ -1,37 +1,62 @@
-image: docker:latest
-services:
-  - docker:dind
-
-variables:
-  DOCKER_BUILDKIT: "1"
-  DOCKER_HOST: tcp://docker:2375
-  DOCKER_TLS_CERTDIR: ""
+include:
+  - template: Security/Secret-Detection.gitlab-ci.yml
 
 stages:
   - build
   - push
 
-build:
+image: docker:dind
+
+services:
+  - name: docker:dind
+    alias: docker
+    command: ["--tls=false"]
+
+variables:
+  DOCKER_BUILDKIT: "1"
+  DOCKER_DRIVER: overlay2
+  DOCKER_HOST: tcp://docker:2375/
+  DOCKER_TLS_CERTDIR: ""
+
+cache:
+  key: python-cache-$CI_COMMIT_REF_SLUG
+  paths:
+    - .python-cache/
+
+Build:
   stage: build
   before_script:
-    - echo "$CI_JOB_TOKEN" | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
+    - echo $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
+  except:
+    variables:
+      - $DOCKER_NO_CACHE
   script:
     - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG || true
     - docker pull $CI_REGISTRY_IMAGE:latest || true
-    - docker build --build-arg BUILDKIT_INLINE_CACHE=1 \
-        --cache-from $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG \
-        --cache-from $CI_REGISTRY_IMAGE:latest \
-        --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA \
-        --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG .
+    - docker build --build-arg BUILDKIT_INLINE_CACHE=1 --cache-from $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG --cache-from $CI_REGISTRY_IMAGE:latest --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG .
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
 
-push_latest:
+Build without cache:
+  before_script:
+    - echo $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
+  stage: build
+  only:
+    variables:
+      - $DOCKER_NO_CACHE
+  script:
+    - docker build --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+
+Push latest:
+  before_script:
+    - echo $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
+  variables:
+    GIT_STRATEGY: none
   stage: push
   only:
     - main
   script:
-    - echo "$CI_JOB_TOKEN" | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
     - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:latest
     - docker push $CI_REGISTRY_IMAGE:latest
