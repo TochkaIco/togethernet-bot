@@ -1,17 +1,11 @@
-include:
-  - template: Security/Secret-Detection.gitlab-ci.yml
-
 stages:
   - build
   - push
-
 image: docker:dind
-
 services:
   - name: docker:dind
     alias: docker
     command: ["--tls=false"]
-
 variables:
   DOCKER_BUILDKIT: "1"
   DOCKER_DRIVER: overlay2
