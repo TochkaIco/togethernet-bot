@@ -1,5 +1,6 @@
 import os
 import discord
+import aiohttp
 from dotenv import load_dotenv
 from src.logger import setup_logging
 
@@ -17,20 +18,25 @@ client = discord.Client(intents=intents)
 
 verification_messages = {}
 
-
 async def set_server_nickname(member_id: int):
     try:
-        ssis_id = int(os.getenv("SSIS_SERVER_GUILD_ID"))
         tog_id = int(os.getenv("TOGETHERNET_SERVER_GUILD_ID"))
+        user = await client.fetch_user(member_id)
+        discord_username = user.name
 
-        ssis_guild = client.get_guild(ssis_id) or await client.fetch_guild(ssis_id)
-        ssis_member = await ssis_guild.fetch_member(member_id)
-        target_name = ssis_member.nick or ssis_member.display_name
-        if target_name:
-            words = target_name.split()
-            first_name = words[0]
-            user_class = words[-1]
-            target_name = first_name + ' ' + user_class
+        ssis_bot_api_url = "https://ssis-bot-ssis-bot-v2.apps.okd.ssis.nu/api/togethernet/lookup-student"
+        ssis_bot_token = os.getenv("SSIS_BOT_TOKEN", "secret-token")
+        headers = {"Authorization": f"Bearer {ssis_bot_token}", "Content-Type": "application/json", "accept": "application/json"}
+        payload = {"discordUsername": discord_username}
+        async with aiohttp.ClientSession() as session:
+            async with session.post(ssis_bot_api_url, json=payload, headers=headers) as resp:
+                if resp.status != 200:
+                    raise Exception(f"Lookup request failed with status {resp.status}")
+                data = await resp.json()
+
+        first_name = data.get('name').split()[0]
+        user_class = data.get('class') or 'CLASS NOT FOUND'
+        target_name = f"{first_name} ({user_class})"
 
         tog_guild = client.get_guild(tog_id) or await client.fetch_guild(tog_id)
         tog_member = await tog_guild.fetch_member(member_id)
