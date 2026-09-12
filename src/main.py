@@ -49,6 +49,10 @@ async def set_server_nickname(member_id: int):
 
 @client.event
 async def on_member_join(member):
+    target_guild_id = int(os.getenv("TOGETHERNET_SERVER_GUILD_ID"))
+    if target_guild_id is None or member.guild.id != int(target_guild_id):
+        return
+
     try:
         msg = await member.send(
             f"Welcome {member.mention}! React with ✅ to verify and get your role."
