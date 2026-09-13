@@ -1,8 +1,7 @@
 import discord
 import os
 from dotenv import load_dotenv
-
-from functions import set_server_nickname
+from functions import set_server_nickname, send_it_logs_message
 from logger import setup_logging
 
 load_dotenv()
@@ -75,6 +74,7 @@ async def on_reaction_add(reaction, user):
 @client.event
 async def on_ready():
     logger.info("Logged in as %s", client.user)
+    await send_it_logs_message(f"Logged in as {client.user}")
 
 
 @client.event
