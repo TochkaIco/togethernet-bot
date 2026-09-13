@@ -22,6 +22,7 @@ async def on_member_join(member):
         verification_messages[member.id] = msg.id
     except discord.Forbidden:
         logger.warning("Could not send DM to %s (DMs closed).", member.name)
+        await send_it_logs_message(f"Could not send DM to {member.name} (DMs closed) on member join.")
 
 
 @client.event
@@ -49,6 +50,7 @@ async def on_reaction_add(reaction, user):
                 if role and tog_member:
                     await tog_member.add_roles(role)
                     logger.info("Assigned role '%s' to %s", role.name, tog_member.name)
+                    await send_it_logs_message(f"Assigned role {role.name} to {tog_member.name}")
             except discord.Forbidden:
                 logger.error(
                     "Forbidden (403): Missing permissions or role hierarchy issue while assigning role to %s",
@@ -56,6 +58,7 @@ async def on_reaction_add(reaction, user):
                 )
             except Exception:
                 logger.exception("Error assigning role to user %s", user.name)
+                await send_it_logs_message(f"Error assigning role to user {user.name}")
 
         await set_server_nickname(user.id)
         verification_messages.pop(user.id, None)
@@ -64,7 +67,7 @@ async def on_reaction_add(reaction, user):
 @client.event
 async def on_ready():
     logger.info("Logged in as %s", client.user)
-    await send_it_logs_message(f"Logged in as {client.user}")
+    await send_it_logs_message(f"Bot restarted. Logged in as {client.user}")
 
 
 @client.event

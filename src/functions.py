@@ -45,3 +45,4 @@ async def set_server_nickname(member_id: int):
         await send_it_logs_message(f"Updated {tog_member.name}'s nickname to: {target_name}")
     except Exception:
         logger.exception("Nickname sync failed for user ID %s", member_id)
+        await send_it_logs_message(f"Nickname sync failed for user ID {member_id} on set_server_nickname")
