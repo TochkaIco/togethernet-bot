@@ -27,7 +27,7 @@ async def on_member_join(member):
 
     try:
         msg = await member.send(
-            f"Welcome {member.mention}! React with ✅ to verify and get your role."
+            f"Vällkommen {member.mention}! Reagera med ✅ för att verifiera dig och få sin togethernet-roll."
         )
         await msg.add_reaction("✅")
         verification_messages[member.id] = msg.id
