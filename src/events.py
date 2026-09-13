@@ -1,20 +1,10 @@
-import discord
 import os
+import discord
 from dotenv import load_dotenv
-from functions import set_server_nickname, send_it_logs_message
-from logger import setup_logging
+from src.functions import set_server_nickname, send_it_logs_message
+from src.bot import client, logger
 
 load_dotenv()
-
-logger = setup_logging()
-
-intents = discord.Intents.default()
-intents.members = True
-intents.guilds = True
-intents.message_content = True
-intents.reactions = True
-
-client = discord.Client(intents=intents)
 
 verification_messages = {}
 

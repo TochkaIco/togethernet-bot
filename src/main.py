@@ -1,20 +1,9 @@
 import os
-import discord
-import aiohttp
 from dotenv import load_dotenv
-from src.logger import setup_logging
+from src.bot import client, logger
+import src.events  # noqa: F401
 
 load_dotenv()
-
-logger = setup_logging()
-
-intents = discord.Intents.default()
-intents.members = True
-intents.guilds = True
-intents.message_content = True
-intents.reactions = True
-
-client = discord.Client(intents=intents)
 
 token = os.environ.get("BOT_TOKEN")
 if not token:

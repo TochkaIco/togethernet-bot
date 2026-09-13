@@ -2,19 +2,9 @@ import os
 import discord
 import aiohttp
 from dotenv import load_dotenv
-from src.logger import setup_logging
+from src.bot import client, logger
 
 load_dotenv()
-
-logger = setup_logging()
-
-intents = discord.Intents.default()
-intents.members = True
-intents.guilds = True
-intents.message_content = True
-intents.reactions = True
-
-client = discord.Client(intents=intents)
 
 async def send_it_logs_message(message: str):
     it_logs_channel = client.get_channel(
