@@ -1,7 +1,9 @@
 import os
 from dotenv import load_dotenv
-from src.bot import client, logger
+from src.bot import client
+from src.log_instance import logger
 import src.events  # noqa: F401
+import src.commands  # noqa: F401
 
 load_dotenv()
 

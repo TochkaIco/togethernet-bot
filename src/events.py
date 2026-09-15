@@ -1,8 +1,11 @@
 import os
 import discord
 from dotenv import load_dotenv
+
+from src.role_assigment_message import RoleView
 from src.functions import set_server_nickname, send_it_logs_message
-from src.bot import client, logger
+from src.bot import client
+from src.log_instance import logger
 
 load_dotenv()
 

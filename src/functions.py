@@ -2,11 +2,13 @@ import os
 import discord
 import aiohttp
 from dotenv import load_dotenv
-from src.bot import client, logger
+# client will be imported lazily inside functions
+from src.log_instance import logger
 
 load_dotenv()
 
 async def send_it_logs_message(message: str):
+    from src.bot import client
     it_logs_channel = client.get_channel(
         int(os.getenv("TOGETHERNET_IT_LOGS_CHANNEL_ID"))) or await client.fetch_channel(
         int(os.getenv("TOGETHERNET_IT_LOGS_CHANNEL_ID"))
@@ -19,6 +21,7 @@ async def send_it_logs_message(message: str):
 
 async def set_server_nickname(member_id: int):
     try:
+        from src.bot import client
         tog_id = int(os.getenv("TOGETHERNET_SERVER_GUILD_ID"))
         user = await client.fetch_user(member_id)
         discord_username = user.name
