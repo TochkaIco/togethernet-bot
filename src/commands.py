@@ -92,3 +92,28 @@ async def force_sync_names(interaction: discord.Interaction):
         f"Sync complete. Processed {processed} members, {failed} failures.",
         ephemeral=True,
     )
+
+@client.tree.command(
+    name="numbers-of-formatted-nicknames",
+    description="Show the number of properly formatted nicknames.",
+    guild=discord.Object(id=TARGET_GUILD_ID),
+)
+@app_commands.checks.has_role(STYRELSE_ROLE_ID)
+async def force_sync_names(interaction: discord.Interaction):
+    await interaction.response.defer(thinking=True)
+    guild = client.get_guild(TARGET_GUILD_ID) or await client.fetch_guild(TARGET_GUILD_ID)
+    if not guild:
+        await interaction.followup.send("Failed to locate the guild.", ephemeral=True)
+        return
+
+    formatted_num = 0
+
+    for member in guild.fetch_members(limit=None):
+        if member.bot:
+            continue
+        if member.nick and re.search(r".+ \(TE\d{2}[A-Za-z]\)$", member.nick):
+            formatted_num += 1
+    await interaction.followup.send(
+        f"Number of properly formatted nicknames: {formatted_num}",
+        ephemeral=True,
+    )
