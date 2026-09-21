@@ -42,7 +42,7 @@ async def set_server_nickname(member_id: int):
                     await send_it_logs_message(f"Lookup request failed with status {resp.status}")
                     return 'error-code'
                 data = await resp.json()
-            except as E:
+            except Exception as E:
                 logger.eror(f"Lookup request failed with status {E}")
                 await send_it_logs_message(f"Lookup request failed with status {E}")
                 return 'error-code'
