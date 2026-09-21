@@ -99,7 +99,7 @@ async def force_sync_names(interaction: discord.Interaction):
     guild=discord.Object(id=TARGET_GUILD_ID),
 )
 @app_commands.checks.has_role(STYRELSE_ROLE_ID)
-async def force_sync_names(interaction: discord.Interaction):
+async def numbers_of_formatted_nicknames(interaction: discord.Interaction):
     await interaction.response.defer(thinking=True)
     guild = client.get_guild(TARGET_GUILD_ID) or await client.fetch_guild(TARGET_GUILD_ID)
     if not guild:
