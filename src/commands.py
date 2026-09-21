@@ -54,12 +54,12 @@ async def deploy_role_selector_error(
         )
 
 @client.tree.command(
-    name="sync-names",
+    name="force-sync-names",
     description="Sync all members' nicknames with SSIS server.",
     guild=discord.Object(id=TARGET_GUILD_ID),
 )
 @app_commands.checks.has_role(STYRELSE_ROLE_ID)
-async def sync_names(interaction: discord.Interaction):
+async def force_sync_names(interaction: discord.Interaction):
     await interaction.response.defer(thinking=True)
     guild = client.get_guild(TARGET_GUILD_ID) or await client.fetch_guild(TARGET_GUILD_ID)
     if not guild:
@@ -68,6 +68,9 @@ async def sync_names(interaction: discord.Interaction):
     processed = 0
     failed = 0
     batch = 0
+    logger.info("Started execution of force_sync_names")
+    await send_it_logs_message("# Started execution of ``force_sync_names``")
+
     async for member in guild.fetch_members(limit=None):
         if member.bot:
             continue
@@ -83,6 +86,8 @@ async def sync_names(interaction: discord.Interaction):
         if batch >= 100:
             await asyncio.sleep(16 * 60)
             batch = 0
+    logger.info(f"Sync complete. Processed {processed} members, {failed} failures.")
+    await send_it_logs_message(f"# Sync complete. Processed {processed} members, {failed} failures.")
     await interaction.followup.send(
         f"Sync complete. Processed {processed} members, {failed} failures.",
         ephemeral=True,
