@@ -1,5 +1,6 @@
 import discord
 import os
+import asyncio
 from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -7,7 +8,7 @@ from dotenv import load_dotenv
 from src.role_assigment_message import RoleView
 from src.bot import client
 from src.log_instance import logger
-from src.functions import send_it_logs_message
+from src.functions import send_it_logs_message, set_server_nickname
 
 load_dotenv()
 
@@ -50,3 +51,36 @@ async def deploy_role_selector_error(
         await interaction.response.send_message(
             f"Ett fel uppstod: {error}", ephemeral=True
         )
+
+@client.tree.command(
+    name="sync-names",
+    description="Sync all members' nicknames with SSIS server.",
+    guild=discord.Object(id=TARGET_GUILD_ID),
+)
+@app_commands.checks.has_role(STYRELSE_ROLE_ID)
+async def sync_names(interaction: discord.Interaction):
+    await interaction.response.defer(thinking=True)
+    guild = client.get_guild(TARGET_GUILD_ID) or await client.fetch_guild(TARGET_GUILD_ID)
+    if not guild:
+        await interaction.followup.send("Failed to locate the guild.", ephemeral=True)
+        return
+    processed = 0
+    failed = 0
+    batch = 0
+    async for member in guild.fetch_members(limit=None):
+        if member.bot:
+            continue
+        try:
+            await set_server_nickname(member.id)
+            processed += 1
+        except Exception:
+            failed += 1
+            logger.exception("Error syncing nickname for member %s", member.id)
+        batch += 1
+        if batch >= 100:
+            await asyncio.sleep(15 * 60)
+            batch = 0
+    await interaction.followup.send(
+        f"Sync complete. Processed {processed} members, {failed} failures.",
+        ephemeral=True,
+    )
