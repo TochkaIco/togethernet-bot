@@ -1,6 +1,7 @@
 import discord
 import os
 import asyncio
+import re
 from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -70,6 +71,8 @@ async def sync_names(interaction: discord.Interaction):
     async for member in guild.fetch_members(limit=None):
         if member.bot:
             continue
+        if member.nick and re.search(r".+ \(TE\d{2}[A-Za-z]\)$", member.nick):
+            continue
         try:
             await set_server_nickname(member.id)
             processed += 1
@@ -78,7 +81,7 @@ async def sync_names(interaction: discord.Interaction):
             logger.exception("Error syncing nickname for member %s", member.id)
         batch += 1
         if batch >= 100:
-            await asyncio.sleep(15 * 60)
+            await asyncio.sleep(16 * 60)
             batch = 0
     await interaction.followup.send(
         f"Sync complete. Processed {processed} members, {failed} failures.",
