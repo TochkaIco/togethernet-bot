@@ -108,7 +108,7 @@ async def numbers_of_formatted_nicknames(interaction: discord.Interaction):
 
     formatted_num = 0
 
-    for member in guild.fetch_members(limit=None):
+    async for member in guild.fetch_members(limit=None):
         if member.bot:
             continue
         if member.nick and re.search(r".+ \(TE\d{2}[A-Za-z]\)$", member.nick):
