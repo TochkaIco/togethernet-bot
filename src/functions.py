@@ -42,9 +42,14 @@ async def set_server_nickname(member_id: int):
                     return 'error-code'
                 data = await resp.json()
 
-        first_name = data.get('name').split()[0]
+        name_data = data.get('name').split()
+        name = name_data[0]
+        name_data.pop(0)
+
+        for unit in name_data:
+            name += f" {unit[0]}."
         user_class = data.get('class') or 'CLASS NOT FOUND'
-        target_name = f"{first_name} ({user_class})"
+        target_name = f"{name} ({user_class})"
 
         tog_guild = client.get_guild(tog_id) or await client.fetch_guild(tog_id)
         tog_member = await tog_guild.fetch_member(member_id)
