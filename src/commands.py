@@ -84,6 +84,8 @@ async def force_sync_names(interaction: discord.Interaction):
             logger.exception("Error syncing nickname for member %s", member.id)
         batch += 1
         if batch >= 100:
+            logger.info("Batch completed. Waiting 16 minutes before continuing...")
+            await send_it_logs_message("*Batch completed. Waiting 16 minutes before continuing...*")
             await asyncio.sleep(16 * 60)
             batch = 0
     logger.info(f"Sync complete. Processed {processed} members, {failed} failures.")

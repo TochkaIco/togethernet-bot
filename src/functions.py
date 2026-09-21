@@ -31,16 +31,21 @@ async def set_server_nickname(member_id: int):
         headers = {"Authorization": f"Bearer {ssis_bot_token}", "Content-Type": "application/json", "accept": "application/json"}
         payload = {"discordUsername": discord_username}
         async with aiohttp.ClientSession() as session:
-            async with session.post(ssis_bot_api_url, json=payload, headers=headers) as resp:
+            try:
+                async with session.post(ssis_bot_api_url, json=payload, headers=headers) as resp:
                 if resp.status == 404:
-                    logger.info("User with member ID %s will not get the togethernet role due to them not being in the SSIS server", member_id)
-                    await send_it_logs_message(f"User with member ID {member_id} will not get the togethernet role due to them not being in the SSIS server")
+                    logger.info("User with member ID %s will not get the togethernet role due to them not being in the SSIS server (404)", member_id)
+                    await send_it_logs_message(f"User with member ID ``{member_id}`` will not get the togethernet role due to them not being in the SSIS server (404)")
                     return 'external-user'
                 elif resp.status != 200:
                     logger.eror(f"Lookup request failed with status {resp.status}")
                     await send_it_logs_message(f"Lookup request failed with status {resp.status}")
                     return 'error-code'
                 data = await resp.json()
+            except as E:
+                logger.eror(f"Lookup request failed with status {E}")
+                await send_it_logs_message(f"Lookup request failed with status {E}")
+                return 'error-code'
 
         name_data = data.get('name').split()
         name = name_data[0]
