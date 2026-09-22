@@ -74,11 +74,14 @@ async def force_sync_names(interaction: discord.Interaction):
     async for member in guild.fetch_members(limit=None):
         if member.bot:
             continue
-        #if member.nick and re.search(r".+ \(TE\d{2}[A-Za-z]\)$", member.nick):
-        #    continue
+        if member.nick and re.search(r"^.+ (?:[A-Z]\. )+\(TE\d{2}[A-Za-z]\)$", member.nick):
+            continue
         try:
-            await set_server_nickname(member.id)
-            processed += 1
+            resp = await set_server_nickname(member.id)
+            if resp:
+                failed += 1
+            else:
+                processed += 1
         except Exception:
             failed += 1
             logger.exception("Error syncing nickname for member %s", member.id)
@@ -113,7 +116,7 @@ async def numbers_of_formatted_nicknames(interaction: discord.Interaction):
     async for member in guild.fetch_members(limit=None):
         if member.bot:
             continue
-        if member.nick and re.search(r".+ \(TE\d{2}[A-Za-z]\)$", member.nick):
+        if member.nick and re.search(r"^.+ (?:[A-Z]\. )+\(TE\d{2}[A-Za-z]\)$", member.nick):
             formatted_num += 1
     await interaction.response.send_message(
         f"Number of properly formatted nicknames: {formatted_num}",
