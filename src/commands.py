@@ -105,7 +105,7 @@ async def force_sync_names(interaction: discord.Interaction):
 )
 @app_commands.checks.has_role(STYRELSE_ROLE_ID)
 async def sync_name(
-    interaction: discord.Interaction
+    interaction: discord.Interaction,
     member: Optional[discord.Member] = None
 ):
     await interaction.response.defer(thinking=True)
