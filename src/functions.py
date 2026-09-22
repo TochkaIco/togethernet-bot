@@ -2,7 +2,6 @@ import os
 import discord
 import aiohttp
 from dotenv import load_dotenv
-# client will be imported lazily inside functions
 from src.log_instance import logger
 
 load_dotenv()
@@ -15,7 +14,7 @@ async def send_it_logs_message(message: str):
     )
 
     if it_logs_channel:
-        await it_logs_channel.send(message)
+        await it_logs_channel.send(message, allowed_mentions=discord.AllowedMentions.none())
     else:
         logger.error('Failed to locate it-logs discord channel')
 
@@ -35,7 +34,7 @@ async def set_server_nickname(member_id: int):
                 async with session.post(ssis_bot_api_url, json=payload, headers=headers) as resp:
                     if resp.status == 404:
                         logger.info("User with member ID %s will not get the togethernet role due to them not being in the SSIS server (404)", member_id)
-                        await send_it_logs_message(f"User with member ID ``{member_id}`` will not get the togethernet role due to them not being in the SSIS server (404)")
+                        await send_it_logs_message(f"User ``{member_id}`` will not get the togethernet role due to them not being in the SSIS server (404)")
                         return 'external-user'
                     elif resp.status != 200:
                         logger.eror(f"Lookup request failed with status {resp.status}")

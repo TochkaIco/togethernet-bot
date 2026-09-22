@@ -37,7 +37,7 @@ async def deploy_role_selector(interaction: discord.Interaction):
         f"{interaction.user.name} triggered deploy_role_selector in {interaction.channel.name}"
     )
     await send_it_logs_message(
-        f"{interaction.user.name} triggered deploy_role_selector in {interaction.channel.mention}"
+        f"{interaction.user.mention} triggered deploy_role_selector in {interaction.channel.mention}"
     )
 
 @deploy_role_selector.error
@@ -125,11 +125,11 @@ async def sync_name(
     try:
         resp = await set_server_nickname(member.id)
         if resp:
-            await interaction.followup.send(f"Failed to sync nickname for {member.mention}.", ephemeral=True)
+            await interaction.followup.send(f"Failed to sync nickname for {member.mention}.", ephemeral=True, allowed_mentions=discord.AllowedMentions.none())
             return
     except Exception:
         logger.exception("Error syncing nickname for member %s", member.id)
-        await interaction.followup.send(f"An error occurred while syncing {member.mention}.", ephemeral=True)
+        await interaction.followup.send(f"An error occurred while syncing {member.mention}.", ephemeral=True, allowed_mentions=discord.AllowedMentions.none())
         return
 
     logger.info(f"Sync complete for member {member.display_name}.")
@@ -137,6 +137,7 @@ async def sync_name(
     await interaction.followup.send(
         f"Sync complete for {member.mention}.",
         ephemeral=True,
+        allowed_mentions=discord.AllowedMentions.none(),
     )
 
 @client.tree.command(
