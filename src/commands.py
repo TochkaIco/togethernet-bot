@@ -5,6 +5,7 @@ import re
 from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
+from typing import Optional
 
 from src.role_assigment_message import RoleView
 from src.bot import client
