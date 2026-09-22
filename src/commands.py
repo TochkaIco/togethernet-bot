@@ -94,7 +94,7 @@ async def force_sync_names(interaction: discord.Interaction):
             batch = 0
     logger.info(f"Sync complete. Processed {processed} members, {failed} failures.")
     await send_it_logs_message(f"# Sync complete. Processed {processed} members, {failed} failures.")
-    await interaction.response.send_it_logs_message(
+    await interaction.response.send_message(
         f"Sync complete. Processed {processed} members, {failed} failures.",
         ephemeral=True,
     )
@@ -118,6 +118,10 @@ async def sync_name(
 
     if member:
         if member.bot:
+            await interaction.response.send_message(
+                f"Cannot sync names for bots.",
+                ephemeral=True,
+            )
             return
         try:
             resp = await set_server_nickname(member.id)
@@ -127,7 +131,7 @@ async def sync_name(
             logger.exception("Error syncing nickname for member %s", member.id)
     logger.info(f"Sync complete for member {member.nick}.")
     await send_it_logs_message(f"Sync complete for {member}.")
-    await interaction.response.send_it_logs_message(
+    return await interaction.response.send_message(
         f"Sync complete for {member}.",
         ephemeral=True,
     )
