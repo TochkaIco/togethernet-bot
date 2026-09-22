@@ -63,7 +63,7 @@ async def force_sync_names(interaction: discord.Interaction):
     await interaction.response.defer(thinking=True)
     guild = client.get_guild(TARGET_GUILD_ID) or await client.fetch_guild(TARGET_GUILD_ID)
     if not guild:
-        await interaction.followup.send("Failed to locate the guild.", ephemeral=True)
+        await interaction.response.send_message("Failed to locate the guild.", ephemeral=True)
         return
     processed = 0
     failed = 0
@@ -93,8 +93,41 @@ async def force_sync_names(interaction: discord.Interaction):
             batch = 0
     logger.info(f"Sync complete. Processed {processed} members, {failed} failures.")
     await send_it_logs_message(f"# Sync complete. Processed {processed} members, {failed} failures.")
-    await interaction.followup.send(
+    await interaction.response.send_it_logs_message(
         f"Sync complete. Processed {processed} members, {failed} failures.",
+        ephemeral=True,
+    )
+
+@client.tree.command(
+    name="sync-name",
+    description="Sync member's nickname with SSIS server.",
+    guild=discord.Object(id=TARGET_GUILD_ID),
+)
+@app_commands.checks.has_role(STYRELSE_ROLE_ID)
+async def sync_name(
+    interaction: discord.Interaction
+    member: Optional[discord.Member] = None
+):
+    await interaction.response.defer(thinking=True)
+    guild = client.get_guild(TARGET_GUILD_ID) or await client.fetch_guild(TARGET_GUILD_ID)
+    if not guild:
+        await interaction.response.send_message("Failed to locate the guild.", ephemeral=True)
+        return
+    logger.info("Started execution of sync_name")
+
+    if member:
+        if member.bot:
+            continue
+        try:
+            resp = await set_server_nickname(member.id)
+            if resp:
+                return await interaction.response.send_message(f"Failed to sync nickname for {member}.")
+        except Exception:
+            logger.exception("Error syncing nickname for member %s", member.id)
+    logger.info(f"Sync complete for member {member.nick}.")
+    await send_it_logs_message(f"Sync complete for {member}.")
+    await interaction.response.send_it_logs_message(
+        f"Sync complete for {member}.",
         ephemeral=True,
     )
 
