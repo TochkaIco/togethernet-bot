@@ -64,7 +64,7 @@ async def force_sync_names(interaction: discord.Interaction):
     await interaction.response.defer(thinking=True)
     guild = client.get_guild(TARGET_GUILD_ID) or await client.fetch_guild(TARGET_GUILD_ID)
     if not guild:
-        await interaction.response.send_message("Failed to locate the guild.", ephemeral=True)
+        await interaction.followup.send("Failed to locate the guild.", ephemeral=True)
         return
     processed = 0
     failed = 0
@@ -94,7 +94,7 @@ async def force_sync_names(interaction: discord.Interaction):
             batch = 0
     logger.info(f"Sync complete. Processed {processed} members, {failed} failures.")
     await send_it_logs_message(f"# Sync complete. Processed {processed} members, {failed} failures.")
-    await interaction.response.send_message(
+    await interaction.followup.send(
         f"Sync complete. Processed {processed} members, {failed} failures.",
         ephemeral=True,
     )
@@ -104,35 +104,38 @@ async def force_sync_names(interaction: discord.Interaction):
     description="Sync member's nickname with SSIS server.",
     guild=discord.Object(id=TARGET_GUILD_ID),
 )
+@app_commands.describe(member="The member whose nickname should be synced.")
 @app_commands.checks.has_role(STYRELSE_ROLE_ID)
 async def sync_name(
     interaction: discord.Interaction,
-    member: Optional[discord.Member] = None
+    member: discord.Member
 ):
     await interaction.response.defer(thinking=True)
     guild = client.get_guild(TARGET_GUILD_ID) or await client.fetch_guild(TARGET_GUILD_ID)
     if not guild:
-        await interaction.response.send_message("Failed to locate the guild.", ephemeral=True)
+        await interaction.followup.send("Failed to locate the guild.", ephemeral=True)
         return
-    logger.info("Started execution of sync_name")
 
-    if member:
-        if member.bot:
-            await interaction.response.send_message(
-                f"Cannot sync names for bots.",
-                ephemeral=True,
-            )
+    logger.info(f"Started execution of sync_name for {member.id}")
+
+    if member.bot:
+        await interaction.followup.send("Cannot sync names for bots.", ephemeral=True)
+        return
+
+    try:
+        resp = await set_server_nickname(member.id)
+        if resp:
+            await interaction.followup.send(f"Failed to sync nickname for {member.mention}.", ephemeral=True)
             return
-        try:
-            resp = await set_server_nickname(member.id)
-            if resp:
-                return await interaction.response.send_message(f"Failed to sync nickname for {member}.")
-        except Exception:
-            logger.exception("Error syncing nickname for member %s", member.id)
-    logger.info(f"Sync complete for member {member.nick}.")
-    await send_it_logs_message(f"Sync complete for {member}.")
-    return await interaction.response.send_message(
-        f"Sync complete for {member}.",
+    except Exception:
+        logger.exception("Error syncing nickname for member %s", member.id)
+        await interaction.followup.send(f"An error occurred while syncing {member.mention}.", ephemeral=True)
+        return
+
+    logger.info(f"Sync complete for member {member.display_name}.")
+    await send_it_logs_message(f"Sync complete for {member.mention}.")
+    await interaction.followup.send(
+        f"Sync complete for {member.mention}.",
         ephemeral=True,
     )
 
@@ -146,7 +149,7 @@ async def numbers_of_formatted_nicknames(interaction: discord.Interaction):
     await interaction.response.defer(thinking=True)
     guild = client.get_guild(TARGET_GUILD_ID) or await client.fetch_guild(TARGET_GUILD_ID)
     if not guild:
-        await interaction.response.send_message("Failed to locate the guild.", ephemeral=True)
+        await interaction.followup.send("Failed to locate the guild.", ephemeral=True)
         return
 
     formatted_num = 0
@@ -156,7 +159,7 @@ async def numbers_of_formatted_nicknames(interaction: discord.Interaction):
             continue
         if member.nick and re.search(r"^.+ (?:[A-Z]\. )+\(TE\d{2}[A-Za-z]\)$", member.nick):
             formatted_num += 1
-    await interaction.response.send_message(
+    await interaction.followup.send(
         f"Number of properly formatted nicknames: {formatted_num}",
         ephemeral=True,
     )
