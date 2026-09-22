@@ -117,7 +117,7 @@ async def sync_name(
 
     if member:
         if member.bot:
-            continue
+            return
         try:
             resp = await set_server_nickname(member.id)
             if resp:
